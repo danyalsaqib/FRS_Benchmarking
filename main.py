@@ -1,8 +1,8 @@
 import json
-from test import *
+from funcs import *
 import os
 
-channel_list = ['express', 'hum', 'ptv']
+channel_list = ['express', 'hum', 'ptv', 'samaa']
 channel_list_2 = ['test']
 
 #*********************************************************#
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     print("xtl - 100: ", xtl - 100)
     print("XTL: ", lol[0]['shapes'][0]['xtl'])
     """
-
+    defaulted_frames = []
     for channel_name in channel_list:
         preds = os.path.join(channel_name, "infered_results")
         annotated = os.path.join(channel_name, "infered_results_final")
@@ -53,7 +53,8 @@ if __name__ == '__main__':
                     unk_pred += 1
             
             unk_counter = 0
-
+            local_rec_FP = 0
+            local_rec_FN = 0
             for i in range(len(pred_data['Bbox'])):
                 validated = 0
                 pred_box = pred_data['Bbox'][i]
@@ -84,6 +85,9 @@ if __name__ == '__main__':
                                         break
                                     else:
                                         #print("Unknowns exceeded")
+                                        #print("FP - frame: ", pred_label)
+                                        rec_FP += 1
+                                        local_rec_FP += 1
                                         rec_val = 0
                                     #    rec_FP += 1
                                         break
@@ -96,8 +100,9 @@ if __name__ == '__main__':
                         if rec_val == 1:
                             rec_local_tp += 1
                             rec_TP += 1
-                        else:
-                            rec_FP += 1
+                        #else:
+                        #    rec_FP += 1
+                        #    local_rec_FP += 1
             #print("Unk_Count: ", unk_counter)
             len_percieved_anot = 0
             for anot_counter_label in anot_data['Label']:
@@ -105,12 +110,23 @@ if __name__ == '__main__':
                     len_percieved_anot += 1
             #print("Length Perceived: ", len_percieved_anot)
             rec_FN = rec_FN + len_percieved_anot - rec_local_tp
+            local_rec_FN = len_percieved_anot - rec_local_tp
+            if local_rec_FP > 0:
+               rec_FP = rec_FP - local_rec_FN
 
                             
             #print("Pred Boxes Length", len(pred_data['Bbox']))
             #print("Pred Boxes: ", pred_data['Label'])
             #print("Anot Boxes Length", len(anot_data['Bbox']))
             #print("Anot Boxes: ", anot_data['Label'])
+            
+            local_det_FP = len(pred_data['Bbox']) - det_local_tp
+            local_det_FN = len(anot_data['Bbox']) - det_local_tp
+
+            if local_det_FP > 0 or local_det_FN > 0 or local_rec_FP > 0 or local_rec_FN > 0:
+                defaulter_dict = {channel_name, filename}
+                defaulted_frames.append(defaulter_dict)
+
 
             det_FP = det_FP + len(pred_data['Bbox']) - det_local_tp
             det_FN = det_FN + len(anot_data['Bbox']) - det_local_tp
@@ -154,10 +170,10 @@ if __name__ == '__main__':
         with open(saver_string, 'w') as f:
             json.dump(dict, f)
 
-                    
-                
-        
-
+    #print("Defaulted Frames: ", defaulted_frames)
+    #print("Number of Defaulted Frames: ", len(defaulted_frames))
+    with open("problem_frames.txt", 'w') as f:
+        f.write(str(defaulted_frames))
 
     
     """

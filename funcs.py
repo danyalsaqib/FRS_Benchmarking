@@ -8,24 +8,15 @@ from lxml import etree
 from tqdm import tqdm
 from io import StringIO
 
-import cv2
-from bs4 import BeautifulSoup
 import numpy as np
 import ast
 from math import *
 import time
-#from insight_utils import *
-from skimage import transform as trans
+
 import os
 import json
 import re
 from numpy import array
-#app = FaceAnalysis(providers=['CUDAExecutionProvider', 'CPUExecutionProvider'], allowed_modules=['detection'])
-#app.prepare(ctx_id=0, det_size=(640, 640))
-
-#rec_model_path = "./insightface/models/buffalo_l/w600k_r50.onnx"
-#handler = insightface.model_zoo.get_model(rec_model_path)
-#handler.prepare(ctx_id=0)
 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
